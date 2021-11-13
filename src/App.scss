@@ -1,0 +1,49 @@
+@import "~bootstrap/scss/bootstrap";
+@import '~react-pro-sidebar/dist/scss/styles.scss';
+
+body {
+    height: 100vh;
+    #root {
+        height: 100%;
+        .App {
+            display: flex;
+            position: relative;
+            height: 100%;
+            main {
+                padding: 24px;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+
+                .btn {
+                    margin: 10px;
+                }
+                .pull-right {
+                    float: right;
+                }
+                .login {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100%;
+                }
+                .identity-box {
+                    border: 2px solid black;
+                    height: 500px;
+                    width: 500px;
+                    position: relative;
+                    .img-face {
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .btn-take-picture {
+                        position: absolute;
+                        bottom: 0;
+                        right: 0;
+                    }
+                }
+            }
+        }
+    }
+}
