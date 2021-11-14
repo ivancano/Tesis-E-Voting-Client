@@ -71,7 +71,7 @@ const Identity = (props) => {
                             Identificación validada
                         </Alert>
                         <div className="text-center">
-                            <Link to={'/identity'}><Button className="btn btn-primary">Continuar</Button></Link>
+                            <Link to={'/vote'}><Button className="btn btn-primary">Continuar</Button></Link>
                         </div>
                     </div>
                 )}
