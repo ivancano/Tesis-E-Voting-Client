@@ -1,8 +1,14 @@
 import axios from 'axios';
 
 const IdentityService = {
-    uploadDni: (formData, filename) => {
-        axios.put(process.env.REACT_APP_BACKEND_URL+process.env.REACT_APP_BUCKET+'/'+filename, formData); 
+    uploadFile: (formData, filename) => {
+        return axios.post(process.env.REACT_APP_IDENTITY_BACKEND_URL+'/uploader', formData); 
+    },
+    validateIdentity: (params) => {
+        return axios.post(process.env.REACT_APP_IDENTITY_BACKEND_URL+'/validate', params); 
+    },
+    validateVoter: (params) => {
+        return axios.post(process.env.REACT_APP_BACKEND_URL+'/voters/login', params); 
     }
 }
 

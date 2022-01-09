@@ -13,8 +13,12 @@ import IdentityService from '../../services/identity';
 const Identity = (props) => {
 
     const [dniImage, setDniImage] = useState(null);
+    const [dniFilename, setDniFilename] = useState(null);
+    const [dniSrc, setDniSrc] = useState(null);
     const [showCamera, setShowCamera] = useState(false);
     const [faceImage, setFaceImage] = useState('');
+    const [faceFilename, setFaceFilename] = useState(null);
+    const [faceSrc, setFaceSrc] = useState(null);
     const [validated, setValidated] = useState(false);
 
     const onFileChange = event => {
@@ -22,26 +26,63 @@ const Identity = (props) => {
     };
 
     const onFileUpload = () => { 
-        const formData = new FormData(); 
-        const newName = dniImage.name;
-        const arrayName = newName.split('.');
-        const fileName = 'dni.'+arrayName[1];
+        const formData = new FormData();
         formData.append( 
-            "myFile", 
+            "file", 
             dniImage, 
-            fileName
+            dniImage.name
         );
-        console.log('dni.'+arrayName[1]);
-        //IdentityService.uploadDni(formData, fileName);
+        IdentityService.uploadFile(formData, dniImage.name).then((result) => {
+            if(result.data.result == "False") {
+                alert("Hubo un error al subir el archivo")
+            }
+            else {
+                setDniSrc(URL.createObjectURL(dniImage));
+                setDniFilename(result.data.filename);
+            }
+        });
     };
 
+    const dataURIToBlob = (dataURI) => {
+        const splitDataURI = dataURI.split(',')
+        const byteString = splitDataURI[0].indexOf('base64') >= 0 ? atob(splitDataURI[1]) : decodeURI(splitDataURI[1])
+        const mimeString = splitDataURI[0].split(':')[1].split(';')[0]
+      
+        const ia = new Uint8Array(byteString.length)
+        for (let i = 0; i < byteString.length; i++)
+          ia[i] = byteString.charCodeAt(i)
+      
+        return new Blob([ia], { type: mimeString })
+      }
+
     const handleTakePhoto = (dataUri) => {
-        setFaceImage(dataUri);
+        const file = dataURIToBlob(dataUri)
+        const formData = new FormData();
+        formData.append('file', file, 'profile.png');
+        IdentityService.uploadFile(formData, 'profile.png').then((result) => {
+            if(result.data.result == "False") {
+                alert("Hubo un error al subir el archivo")
+            }
+            else {
+                setFaceImage(dataUri)
+                setFaceFilename(result.data.filename);
+            }
+        });
         setShowCamera(false)
     }
 
     const validate = () => {
-        setValidated(true);
+        IdentityService.validateIdentity({
+            face: faceFilename,
+            dni: dniFilename
+        }).then((result) => {
+            if(result.data.result == "False") {
+                alert("No se ha podido validar la identidad del usuario")
+            }
+            else {
+                setValidated(true);
+            }
+        });
     }
 
     return (
@@ -54,6 +95,7 @@ const Identity = (props) => {
                     <Col className="identity-box">
                         <h3>DNI</h3>
                         <p>Debe subir una foto de la parte frontal de su documento nacional de identidad.</p>
+                        <img style={{width: '60%', marginBottom: 15}} src={dniSrc} />
                         <input type="file" onChange={onFileChange} /> 
                         <Button onClick={onFileUpload} className="btn btn-secondary">Subir</Button>
                     </Col>
