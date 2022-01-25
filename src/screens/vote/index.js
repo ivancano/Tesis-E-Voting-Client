@@ -1,11 +1,58 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     Link
 } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
 import Table from "react-bootstrap/Table";
+import VoteService from "../../services/vote";
 
 const Vote = (props) => {
+
+    const [electionDetail, setElectionDetail] = useState([])
+    const [candidateSelected, setCandidateSelected] = useState(null)
+    const [voteSent, setVoteSent] = useState(false)
+
+    useEffect(() => {
+        const voter = JSON.parse(localStorage.getItem('voter'));
+        VoteService.getElection(voter[0].id)
+        .then(data => {
+            setElectionDetail(data.data)
+        })
+    }, []);
+
+    const selectCandidate = (e) => {
+        const voter = JSON.parse(localStorage.getItem('voter'));
+        const electionSelected = electionDetail.find(x => x.id == e.currentTarget.value);
+        setCandidateSelected({
+            'election_detail_id': electionSelected.id,
+            'election_id': electionSelected.election.id,
+            'parties_id': electionSelected.party.id,
+            'candidate_id': electionSelected.candidate.id,
+            'position': electionSelected.position,
+            'voter_id': voter[0].id
+        });
+    }
+
+    const vote = () => {
+        if(candidateSelected !== null) {
+            VoteService.vote(candidateSelected)
+            .then(res => {
+                if(res.data.result == 'Error') {
+                    alert("Error al procesar el voto")    
+                }
+                else {
+                    setVoteSent(true)
+                }
+            })
+            .catch(e => {
+                alert("Error al procesar el voto")
+            });
+        }
+        else {
+            alert("Debe seleccionar un candidato");
+        }
+    }
 
     return (
         <>
@@ -21,43 +68,30 @@ const Vote = (props) => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Juan Perez</td>
-                        <td>Partido Justicialista</td>
-                        <td>Presidente</td>
-                        <td>
-                            <input type="radio" value="1" name="vote" /> 
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Jorge Arguello</td>
-                        <td>Partido Obrero</td>
-                        <td>Presidente</td>
-                        <td>
-                            <input type="radio" value="2" name="vote" /> 
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Enrique Peralta</td>
-                        <td>Partido Liberal</td>
-                        <td>Presidente</td>
-                        <td>
-                            <input type="radio" value="3" name="vote" /> 
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Alicia Marquez</td>
-                        <td>Frente de Izquiera</td>
-                        <td>Presidente</td>
-                        <td>
-                            <input type="radio" value="4" name="vote" /> 
-                        </td>
-                    </tr>
+                    {electionDetail.length > 0 && electionDetail.map((i, k) => (
+                            <tr>
+                                <td>{i.candidate.name} {i.candidate.lastname}</td>
+                                <td>{i.party.name}</td>
+                                <td>{i.position}</td>
+                                <td>
+                                    <input type="radio" value={i.id} name="vote" onChange={selectCandidate} /> 
+                                </td>
+                            </tr>
+                        ))}
                 </tbody>
             </Table>
-            <div className="text-center">
-                <Button className="btn btn-primary">Votar</Button>
-            </div>
+            {voteSent && (
+                <div style={{marginTop: '20px'}}>
+                    <Alert variant={'success'}>
+                        Voto enviado con éxito
+                    </Alert>
+                </div>
+            )}
+            {!voteSent && (
+                <div className="text-center"  style={{marginTop: '20px'}}>
+                    <Button className="btn btn-primary" onClick={vote}>Votar</Button>
+                </div>
+            )}
         </div>
         </>
     );

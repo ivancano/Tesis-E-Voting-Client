@@ -14,7 +14,8 @@ const Login = (props) => {
 
     const validate = () => {
         IdentityService.validateVoter({dni: dni, pin: pin}).then(res => {
-            if(res.data.validation) {
+            if(res.data.validation && res.data.validation.voter) {
+                localStorage.setItem('voter', JSON.stringify(res.data.validation.voter));
                 history.push('identity');
             }
             else {
